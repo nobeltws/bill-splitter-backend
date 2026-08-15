@@ -10,7 +10,7 @@ Allow the host to create a session with their finalized item list and PayNow det
 - Get session endpoint (returns full session state for participants)
 - UUID-based session IDs (shareable, unguessable)
 - Database tables: sessions, items
-- Input validation (items must have name, quantity > 0, unitPrice > 0)
+- Input validation via Pydantic models (items must have name, quantity > 0, unitPrice > 0)
 
 ## API
 
@@ -72,6 +72,24 @@ CREATE TABLE items (
 );
 ```
 
+## SQLAlchemy Models
+
+```python
+class Session(Base):
+    __tablename__ = "sessions"
+
+    id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
+    host_paynow_id: Mapped[str] = mapped_column(String(50))
+    tax: Mapped[Decimal] = mapped_column(Numeric(10, 2), default=0)
+    service_charge: Mapped[Decimal] = mapped_column(Numeric(10, 2), default=0)
+    discount: Mapped[Decimal] = mapped_column(Numeric(10, 2), default=0)
+    created_at: Mapped[datetime] = mapped_column(default=func.now())
+
+    items: Mapped[list["Item"]] = relationship(back_populates="session", cascade="all, delete-orphan")
+    claims: Mapped[list["Claim"]] = relationship(back_populates="session", cascade="all, delete-orphan")
+    payments: Mapped[list["Payment"]] = relationship(back_populates="session", cascade="all, delete-orphan")
+```
+
 ## Out of Scope
 
 - Editing sessions after creation
@@ -84,4 +102,4 @@ CREATE TABLE items (
 - Session ID is a UUID returned on creation
 - Participants can fetch full session state by ID
 - Invalid session ID returns 404
-- Missing/invalid fields return 400 with descriptive errors
+- Missing/invalid fields return 422 with Pydantic validation errors

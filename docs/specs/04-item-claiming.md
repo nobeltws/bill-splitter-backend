@@ -77,4 +77,4 @@ CREATE TABLE claims (
 - Over-claiming returns 400 with a clear error
 - Claims appear in the session GET response
 - A participant can remove their claim on an item
-- Claiming with a quantity of 0 or negative returns 400
+- Claiming with a quantity of 0 or negative returns 422 (Pydantic validation)
