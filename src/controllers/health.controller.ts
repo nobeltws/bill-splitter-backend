@@ -1,6 +1,9 @@
-import { Context } from "koa";
+import { Controller, Get, Route } from "tsoa";
 
-export async function healthCheck(ctx: Context): Promise<void> {
-  ctx.status = 200;
-  ctx.body = { status: "ok" };
+@Route("health")
+export class HealthController extends Controller {
+  @Get()
+  public async healthCheck(): Promise<{ status: string }> {
+    return { status: "ok" };
+  }
 }

@@ -1,58 +1,70 @@
 {
-  "name": "bill-splitter-backend",
-  "version": "1.0.0",
-  "description": "Upload a photo of your receipt and split the bill with your friends",
-  "main": "index.js",
-  "directories": {
-    "doc": "docs"
-  },
-  "scripts": {
-    "dev": "tsx watch src/server.ts",
-    "build": "tsc",
-    "start": "node dist/src/server.js",
-    "test": "jest",
-    "test:watch": "jest --watch",
-    "typeorm": "tsx node_modules/typeorm/cli.js",
-    "migration:generate": "npm run typeorm -- migration:generate -d src/db/data-source.ts",
-    "migration:run": "npm run typeorm -- migration:run -d src/db/data-source.ts",
-    "migration:revert": "npm run typeorm -- migration:revert -d src/db/data-source.ts"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/nobeltws/bill-splitter-backend.git"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "commonjs",
-  "bugs": {
-    "url": "https://github.com/nobeltws/bill-splitter-backend/issues"
-  },
-  "homepage": "https://github.com/nobeltws/bill-splitter-backend#readme",
-  "dependencies": {
-    "@koa/cors": "^5.0.0",
-    "@koa/router": "^15.7.0",
-    "dotenv": "^17.4.2",
-    "koa": "^3.2.1",
-    "koa-body": "^8.0.0",
-    "pg": "^8.23.0",
-    "reflect-metadata": "^0.2.2",
-    "tesseract.js": "^7.0.0",
-    "typeorm": "^1.1.0"
-  },
-  "devDependencies": {
-    "@types/jest": "^30.0.0",
-    "@types/koa": "^3.0.3",
-    "@types/koa__cors": "^5.0.1",
-    "@types/koa__router": "^12.0.5",
-    "@types/node": "^26.2.0",
-    "@types/pg": "^8.21.0",
-    "@types/supertest": "^7.2.1",
-    "jest": "^30.4.2",
-    "supertest": "^7.2.2",
-    "ts-jest": "^29.4.12",
-    "ts-node": "^10.9.2",
-    "tsx": "^4.23.12",
-    "typescript": "~5.7.0"
-  }
+	"name": "bill-splitter-backend",
+	"version": "1.0.0",
+	"description": "Upload a photo of your receipt and split the bill with your friends",
+	"main": "index.js",
+	"directories": {
+		"doc": "docs"
+	},
+	"scripts": {
+		"dev": "npm run generate && tsx watch src/server.ts",
+		"swagger": "tsoa spec",
+		"generate": "tsoa spec-and-routes && node -e \"const fs=require('fs');const f='src/generated/routes.ts';fs.writeFileSync(f,'// @ts-nocheck\\n'+fs.readFileSync(f,'utf8'))\"",
+		"prebuild": "npm run generate",
+		"build": "tsc",
+		"start": "docker-compose up -d --build",
+		"start:fresh": "docker-compose down -v && npm start -- --force-recreate",
+		"test": "jest",
+		"test:watch": "jest --watch",
+		"typeorm": "tsx node_modules/typeorm/cli.js",
+		"migration:generate": "npm run typeorm -- migration:generate -d src/db/data-source.ts",
+		"migration:run": "npm run typeorm -- migration:run -d src/db/data-source.ts",
+		"migration:revert": "npm run typeorm -- migration:revert -d src/db/data-source.ts"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/nobeltws/bill-splitter-backend.git"
+	},
+	"keywords": [],
+	"author": "",
+	"license": "ISC",
+	"type": "commonjs",
+	"bugs": {
+		"url": "https://github.com/nobeltws/bill-splitter-backend/issues"
+	},
+	"homepage": "https://github.com/nobeltws/bill-splitter-backend#readme",
+	"dependencies": {
+		"@koa/cors": "^5.0.0",
+		"@koa/multer": "^4.0.0",
+		"@koa/router": "^15.7.0",
+		"dotenv": "^17.4.2",
+		"koa": "^3.2.1",
+		"koa-body": "^8.0.0",
+		"multer": "^2.2.0",
+		"pg": "^8.23.0",
+		"reflect-metadata": "^0.2.2",
+		"tesseract.js": "^7.0.0",
+		"tsoa": "^7.0.0-alpha.0",
+		"typeorm": "^1.1.0"
+	},
+	"devDependencies": {
+		"@types/jest": "^30.0.0",
+		"@types/koa": "^3.0.3",
+		"@types/koa__cors": "^5.0.1",
+		"@types/koa__router": "^12.0.5",
+		"@types/node": "^26.2.0",
+		"@types/pg": "^8.21.0",
+		"@types/supertest": "^7.2.1",
+		"jest": "^30.4.2",
+		"supertest": "^7.2.2",
+		"ts-jest": "^29.4.12",
+		"ts-node": "^10.9.2",
+		"tsx": "^4.23.12",
+		"typescript": "~5.7.0"
+	},
+	"overrides": {
+		"@tsoa/runtime": {
+			"@types/koa": "$@types/koa"
+		}
+	}
 }
