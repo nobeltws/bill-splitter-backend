@@ -11,7 +11,7 @@ from app.main import app
 @patch("app.main.ocr_service.load_model")
 async def test_ocr_model_loaded_on_startup(mock_load):
     async with LifespanManager(app):
-        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as _client:
             pass
 
     mock_load.assert_called_once()

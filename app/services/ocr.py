@@ -23,9 +23,8 @@ class OCRService:
         return self._run_inference(image_bytes)
 
     def _run_inference(self, image_bytes: bytes) -> list[dict]:
-        from PIL import ImageOps
-
         import numpy as np
+        from PIL import ImageOps
 
         image = Image.open(io.BytesIO(image_bytes))
 
