@@ -5,17 +5,27 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import text
 
 from app.api.health import router as health_router
+from app.api.receipts import router as receipts_router
 from app.database import engine
 from app.exceptions import register_exception_handlers
+from app.services.ocr import ocr_service
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    # Verify DB connection
     try:
         async with engine.connect() as conn:
             await conn.execute(text("SELECT 1"))
     except Exception:
         pass  # DB not available — app still starts (useful for tests)
+
+    # Load OCR model
+    try:
+        ocr_service.load_model()
+    except Exception:
+        pass  # OCR not available — app still starts (docTR may not be installed)
+
     yield
     await engine.dispose()
 
@@ -33,3 +43,4 @@ app.add_middleware(
 register_exception_handlers(app)
 
 app.include_router(health_router)
+app.include_router(receipts_router)

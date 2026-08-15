@@ -4,49 +4,52 @@ Upload a photo of your receipt and split the bill with your friends.
 
 ## Tech Stack
 
-- **Runtime:** Node.js + TypeScript
-- **Framework:** KOA
-- **Database:** PostgreSQL
-- **ORM:** TypeORM
-- **Architecture:** Controller → Service → Repository
+- **Language:** Python 3.11+
+- **Framework:** FastAPI (async)
+- **Database:** PostgreSQL with SQLAlchemy 2.0 (async) + Alembic
+- **OCR:** docTR (PyTorch backend, CPU inference)
+- **Validation:** Pydantic v2
+- **Architecture:** Router → Service → Repository
 
 ## Prerequisites
 
-- Node.js >= 18
-- PostgreSQL running locally (or a remote connection URL)
+- Python 3.11+
+- PostgreSQL running locally (or via Docker)
 
 ## Setup
 
-1. Install dependencies:
+1. Create and activate a virtual environment:
 
 ```bash
-npm install
+python -m venv .venv
+source .venv/bin/activate
 ```
 
-2. Create your environment file:
+2. Install dependencies:
+
+```bash
+pip install -e ".[dev]"
+```
+
+3. Create your environment file:
 
 ```bash
 cp .env.example .env
 ```
 
-3. Update `.env` with your database credentials:
+4. Update `.env` with your database credentials:
 
 ```
-PORT=3000
-DATABASE_URL=postgresql://postgres:postgres@localhost:5432/bill_splitter
-NODE_ENV=development
+DATABASE_URL=postgresql+asyncpg://postgres:postgres@localhost:5432/billsplitter
+HOST=0.0.0.0
+PORT=8000
 ```
 
-4. Create the database:
+5. Create the database and run migrations:
 
 ```bash
-createdb bill_splitter
-```
-
-5. Run migrations (when migrations exist):
-
-```bash
-npm run migration:run
+createdb billsplitter
+alembic upgrade head
 ```
 
 ## Running
@@ -54,57 +57,72 @@ npm run migration:run
 ### Development (with hot reload)
 
 ```bash
-npm run dev
+uvicorn app.main:app --reload
 ```
 
-### Production
+### Docker (recommended)
 
 ```bash
-npm run build
-npm start
+docker compose up --build
 ```
+
+This starts both PostgreSQL and the API server. Migrations run automatically on startup.
 
 ## Scripts
 
 | Command | Description |
 |---------|-------------|
-| `npm run dev` | Start dev server with hot reload |
-| `npm run build` | Compile TypeScript to `dist/` |
-| `npm start` | Run compiled production build |
-| `npm test` | Run all tests |
-| `npm run test:watch` | Run tests in watch mode |
-| `npm run migration:run` | Run pending migrations |
-| `npm run migration:generate` | Generate migration from entity changes |
-| `npm run migration:revert` | Revert last migration |
+| `uvicorn app.main:app --reload` | Start dev server with hot reload |
+| `pytest` | Run all tests |
+| `pytest -v` | Run tests with verbose output |
+| `ruff check .` | Lint code |
+| `ruff format .` | Format code |
+| `alembic upgrade head` | Run pending migrations |
+| `alembic revision --autogenerate -m "msg"` | Generate migration from model changes |
+| `alembic downgrade -1` | Revert last migration |
 
 ## API Endpoints
 
 | Method | Path | Description |
 |--------|------|-------------|
-| GET | `/health` | Health check — returns `{ status: "ok" }` |
+| GET | `/health` | Health check |
+| POST | `/api/receipts/parse` | OCR + parse a receipt image |
+| POST | `/api/sessions` | Create a bill-splitting session |
+| GET | `/api/sessions/:id` | Get session state |
+| POST | `/api/sessions/:id/claims` | Claim items |
+| DELETE | `/api/sessions/:id/claims` | Remove a claim |
+| GET | `/api/sessions/:id/summary` | Get calculated bill split |
+| POST | `/api/sessions/:id/payments` | Mark as paid |
+| DELETE | `/api/sessions/:id/payments` | Unmark payment |
+
+Interactive API docs available at `http://localhost:8000/docs` (Swagger UI).
 
 ## Project Structure
 
 ```
-src/
-├── app.ts                  # KOA app (middleware + router)
-├── server.ts               # Entry point (DB init + listen)
-├── config/                 # Environment configuration
-├── controllers/            # Route handlers
-├── services/               # Business logic
-├── repos/                  # Database access
-├── entities/               # TypeORM entity classes
-├── middleware/             # KOA middleware
-│   ├── errorHandler.ts     # Catches errors → JSON response
-│   ├── notFound.ts         # 404 handler
-│   └── requestLogger.ts    # Request logging
-├── routes/                 # Route definitions
-└── db/
-    └── data-source.ts      # TypeORM DataSource config
-migrations/                 # TypeORM migration files
-tests/
-├── unit/                   # Unit tests
-└── integration/            # Integration tests (supertest)
+app/
+├── main.py              # FastAPI app factory, lifespan events
+├── config.py            # Settings (pydantic-settings, reads .env)
+├── database.py          # Async SQLAlchemy engine + session factory
+├── exceptions.py        # JSON exception handlers (404, 500)
+├── api/                 # Route handlers (thin, delegate to services)
+│   ├── health.py
+│   ├── receipts.py
+│   ├── sessions.py
+│   ├── claims.py
+│   └── payments.py
+├── services/            # Business logic
+│   ├── ocr.py           # docTR model wrapper
+│   ├── receipt_parser.py
+│   ├── session.py
+│   ├── claim.py
+│   ├── calculation.py
+│   └── payment.py
+├── models/              # SQLAlchemy table models
+├── schemas/             # Pydantic request/response schemas
+└── repositories/        # Database queries
+alembic/                 # Migration files
+tests/                   # pytest test suite
 ```
 
 ## Error Responses
@@ -112,9 +130,10 @@ tests/
 All errors return consistent JSON:
 
 ```json
-{ "error": "Error message here" }
+{ "detail": "Error message here" }
 ```
 
-- **404** — Unknown routes return `{ "error": "Not Found" }`
-- **400** — Validation errors return the specific message
-- **500** — Unhandled errors return `{ "error": "Internal Server Error" }`
+- **404** — Unknown routes: `{ "detail": "Not Found" }`
+- **422** — Validation errors: Pydantic error details
+- **400** — Business rule violations (e.g., over-claiming)
+- **500** — Unhandled errors: `{ "detail": "Internal Server Error" }`
