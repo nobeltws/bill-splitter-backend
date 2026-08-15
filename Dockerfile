@@ -10,7 +10,12 @@ COPY src ./src
 COPY migrations ./migrations
 
 RUN npm run build
+RUN npm prune --omit=dev
 
 EXPOSE 3000
 
-CMD ["node", "dist/server.js"]
+COPY docker-entrypoint.sh ./
+RUN chmod +x docker-entrypoint.sh
+
+ENTRYPOINT ["./docker-entrypoint.sh"]
+CMD ["node", "dist/src/server.js"]
