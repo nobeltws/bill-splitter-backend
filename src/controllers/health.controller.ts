@@ -1,0 +1,6 @@
+import { Context } from "koa";
+
+export async function healthCheck(ctx: Context): Promise<void> {
+  ctx.status = 200;
+  ctx.body = { status: "ok" };
+}
