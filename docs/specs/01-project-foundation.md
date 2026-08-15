@@ -8,8 +8,8 @@ Scaffold the KOA + TypeScript project with the controller/service/repo architect
 
 - TypeScript + KOA project setup (tsconfig, scripts, dev/build tooling)
 - Folder structure: `src/controllers/`, `src/services/`, `src/repos/`, `src/middleware/`, `src/config/`
-- PostgreSQL connection setup (connection pooling, config from env vars)
-- Database migration tooling (e.g., Knex migrations or similar)
+- PostgreSQL connection setup (TypeORM DataSource, config from env vars)
+- Database migration tooling (TypeORM migrations)
 - Error handling middleware (consistent JSON error responses)
 - Request logging middleware
 - CORS configuration
