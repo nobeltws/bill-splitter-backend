@@ -1,4 +1,3 @@
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import Base, get_session
 
