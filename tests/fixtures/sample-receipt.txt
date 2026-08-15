@@ -1,0 +1,19 @@
+RESTAURANT ABC
+123 Main Street
+Tel: 6512 3456
+
+Table 5
+2024-01-15 19:30
+
+2x Chicken Rice         13.00
+1x Laksa                8.50
+Fish & Chips            15.00
+3x Iced Tea             9.00
+
+Subtotal               45.50
+Service Charge         4.55
+GST                    3.64
+Total                  53.69
+
+VISA ****1234
+Thank you!
