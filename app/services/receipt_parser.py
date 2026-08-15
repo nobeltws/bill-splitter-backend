@@ -1,43 +1,61 @@
 import re
 
-from app.schemas.receipt import ParsedItem, ParsedReceipt, WordBox
+from app.schemas.receipt import ParsedItem, ParsedReceipt
 
 BLACKLIST = [
     "total", "subtotal", "sub-total", "cash", "change",
     "visa", "mastercard", "amex", "nets", "balance",
     "thank you", "receipt", "invoice", "payment",
     "member", "points", "signature", "table",
-    "pos", "rept#", "op:", "tel",
+    "pos", "rept#", "op:", "tel", "sts",
 ]
 
 TAX_REGEX = re.compile(r"(\d+)%\s*(gst|tax|vat)", re.IGNORECASE)
 SERVICE_CHARGE_REGEX = re.compile(
     r"(?:\d+%\s*)?(service\s*charge|svr?\s*ch(?:a?r)?g|svc)", re.IGNORECASE
 )
-PRICE_REGEX = re.compile(r"\$(\d+\.\d{2})")
+PRICE_REGEX = re.compile(r"\$(\d+\.\d{1,2})")
 QUANTITY_REGEX = re.compile(r"^(\d+)$")
 
-Y_TOLERANCE = 0.02  # Words within this vertical distance are on the same line
+Y_TOLERANCE = 0.01  # Words within this vertical distance are on the same line
+
+
+def _filter_oversized_words(words: list[dict]) -> list[dict]:
+    """Remove words with abnormally tall bounding boxes (OCR artifacts)."""
+    if not words:
+        return []
+
+    heights = [w["bbox"][3] - w["bbox"][1] for w in words]
+    heights.sort()
+    median_height = heights[len(heights) // 2]
+
+    max_height = median_height * 2.5
+    return [w for w in words if (w["bbox"][3] - w["bbox"][1]) <= max_height]
 
 
 def _cluster_into_lines(words: list[dict]) -> list[list[dict]]:
     if not words:
         return []
 
+    words = _filter_oversized_words(words)
+    if not words:
+        return []
+
     sorted_words = sorted(words, key=lambda w: (w["bbox"][1], w["bbox"][0]))
     lines = []
     current_line = [sorted_words[0]]
+    anchor_y = (sorted_words[0]["bbox"][1] + sorted_words[0]["bbox"][3]) / 2
 
     for word in sorted_words[1:]:
         y_center = (word["bbox"][1] + word["bbox"][3]) / 2
-        prev_y_center = (current_line[-1]["bbox"][1] + current_line[-1]["bbox"][3]) / 2
 
-        if abs(y_center - prev_y_center) <= Y_TOLERANCE:
+        if abs(y_center - anchor_y) <= Y_TOLERANCE:
             current_line.append(word)
         else:
             current_line.sort(key=lambda w: w["bbox"][0])
             lines.append(current_line)
             current_line = [word]
+            anchor_y = y_center
 
     current_line.sort(key=lambda w: w["bbox"][0])
     lines.append(current_line)
@@ -70,12 +88,6 @@ def parse_receipt_words(words: list[dict]) -> ParsedReceipt:
     tax = 0.0
     service_charge = 0.0
     raw_lines: list[str] = []
-    word_boxes: list[WordBox] = []
-
-    for word in words:
-        word_boxes.append(
-            WordBox(text=word["text"], bbox=word["bbox"], confidence=word.get("confidence", 0.0))
-        )
 
     for line_words in lines:
         line_text = " ".join(w["text"] for w in line_words)
@@ -105,7 +117,7 @@ def parse_receipt_words(words: list[dict]) -> ParsedReceipt:
             continue
 
         # Extract quantity and name
-        non_price_words = [w for w in line_words if not PRICE_REGEX.match(w["text"])]
+        non_price_words = [w for w in line_words if not re.match(r"^\$\d+\.\d{1,2}$", w["text"])]
         quantity = 1
         name_words = []
 
@@ -122,6 +134,9 @@ def parse_receipt_words(words: list[dict]) -> ParsedReceipt:
         unit_price = round(price / quantity, 2)
         confidence = _line_confidence(line_words)
 
+        if confidence < 0.9:
+            continue
+
         items.append(
             ParsedItem(name=name, quantity=quantity, unitPrice=unit_price, confidence=confidence)
         )
@@ -131,5 +146,4 @@ def parse_receipt_words(words: list[dict]) -> ParsedReceipt:
         tax=tax,
         serviceCharge=service_charge,
         rawText="\n".join(raw_lines),
-        wordBoxes=word_boxes,
     )
