@@ -1,3 +1,4 @@
+import logging
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
@@ -10,6 +11,8 @@ from app.database import engine
 from app.exceptions import register_exception_handlers
 from app.services.ocr import ocr_service
 
+logger = logging.getLogger(__name__)
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -18,13 +21,13 @@ async def lifespan(app: FastAPI):
         async with engine.connect() as conn:
             await conn.execute(text("SELECT 1"))
     except Exception:
-        pass  # DB not available — app still starts (useful for tests)
+        logger.warning("Database connection failed at startup", exc_info=True)
 
     # Load OCR model
     try:
         ocr_service.load_model()
     except Exception:
-        pass  # OCR not available — app still starts (docTR may not be installed)
+        logger.error("Failed to load OCR model", exc_info=True)
 
     yield
     await engine.dispose()
