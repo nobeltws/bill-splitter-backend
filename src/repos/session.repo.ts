@@ -28,6 +28,6 @@ export async function createSession(data: {
 export async function findSessionById(id: string): Promise<Session | null> {
   return sessionRepository.findOne({
     where: { id },
-    relations: ["items"],
+    relations: { items: true },
   });
 }
