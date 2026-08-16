@@ -4,16 +4,22 @@ from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.repositories.claim import ClaimRepository
+from app.repositories.session import SessionRepository
 
 
 class ClaimService:
     def __init__(self, db: AsyncSession):
         self.db = db
         self.repo = ClaimRepository(db)
+        self.session_repo = SessionRepository(db)
 
     async def create_claims(
         self, session_id: uuid.UUID, participant_name: str, claims: list[dict]
     ) -> list[dict]:
+        session = await self.session_repo.get_by_id(session_id)
+        if session is None:
+            raise HTTPException(status_code=404, detail="Session not found")
+
         results = []
         for claim_data in claims:
             item_id = claim_data["item_id"]

@@ -1,6 +1,6 @@
 import uuid
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class ClaimItemRequest(BaseModel):
@@ -9,11 +9,15 @@ class ClaimItemRequest(BaseModel):
 
 
 class CreateClaimsRequest(BaseModel):
+    model_config = ConfigDict(str_strip_whitespace=True)
+
     participantName: str = Field(min_length=1)
     claims: list[ClaimItemRequest] = Field(min_length=1)
 
 
 class DeleteClaimRequest(BaseModel):
+    model_config = ConfigDict(str_strip_whitespace=True)
+
     participantName: str = Field(min_length=1)
     itemId: uuid.UUID
 
