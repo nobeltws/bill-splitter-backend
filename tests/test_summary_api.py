@@ -1,16 +1,4 @@
 import uuid
-from decimal import Decimal
-
-import pytest
-from httpx import ASGITransport, AsyncClient
-
-from app.main import app
-
-
-@pytest.fixture
-async def client():
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
-        yield ac
 
 
 SESSION_PAYLOAD = {
@@ -74,11 +62,13 @@ class TestGetSummary:
 
         alice = participants["Alice"]
         assert alice["itemsSubtotal"] == 8.50
-        assert alice["totalOwed"] > 0
+        assert alice["totalOwed"] == 10.31
 
         bob = participants["Bob"]
         assert bob["itemsSubtotal"] == 6.50
-        assert bob["totalOwed"] > 0
+        assert bob["totalOwed"] == 7.89
+
+        assert alice["totalOwed"] + bob["totalOwed"] == data["grandTotal"]
 
     async def test_summary_not_found_returns_404(self, client):
         fake_id = uuid.uuid4()
