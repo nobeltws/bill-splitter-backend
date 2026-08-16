@@ -22,12 +22,14 @@ class SessionRepository:
         tax: Decimal,
         service_charge: Decimal,
         discount: Decimal,
+        participant_count: int = 1,
     ) -> Session:
         session = Session(
             host_paynow_id=host_paynow_id,
             tax=tax,
             service_charge=service_charge,
             discount=discount,
+            participant_count=participant_count,
         )
         for item_data in items:
             item = Item(

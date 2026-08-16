@@ -19,6 +19,7 @@ class SessionService:
         tax: float,
         service_charge: float,
         discount: float,
+        participant_count: int = 1,
     ) -> Session:
         return await self.repo.create(
             host_paynow_id=host_paynow_id,
@@ -26,6 +27,7 @@ class SessionService:
             tax=Decimal(str(tax)),
             service_charge=Decimal(str(service_charge)),
             discount=Decimal(str(discount)),
+            participant_count=participant_count,
         )
 
     async def get_session(self, session_id: uuid.UUID) -> Session | None:

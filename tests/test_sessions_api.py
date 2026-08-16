@@ -80,3 +80,19 @@ class TestGetSession:
     async def test_get_session_invalid_uuid_returns_422(self, client):
         response = await client.get("/api/sessions/not-a-uuid")
         assert response.status_code == 422
+
+
+class TestParticipantCount:
+    async def test_create_session_with_participant_count(self, client):
+        payload = {**VALID_PAYLOAD, "participantCount": 3}
+        response = await client.post("/api/sessions", json=payload)
+        assert response.status_code == 201
+
+        session_id = response.json()["sessionId"]
+        get_resp = await client.get(f"/api/sessions/{session_id}")
+        assert get_resp.json()["participantCount"] == 3
+
+    async def test_create_session_participant_count_must_be_positive(self, client):
+        payload = {**VALID_PAYLOAD, "participantCount": 0}
+        response = await client.post("/api/sessions", json=payload)
+        assert response.status_code == 422

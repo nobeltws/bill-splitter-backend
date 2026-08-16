@@ -35,6 +35,7 @@ async def create_session(
         tax=body.tax,
         service_charge=body.serviceCharge,
         discount=body.discount,
+        participant_count=body.participantCount,
     )
     return CreateSessionResponse(sessionId=session.id, createdAt=session.created_at)
 
@@ -55,6 +56,7 @@ async def get_session_by_id(
         tax=float(session.tax),
         serviceCharge=float(session.service_charge),
         discount=float(session.discount),
+        participantCount=session.participant_count,
         claims=[
             SessionClaimResponse(
                 participantName=claim.participant_name,

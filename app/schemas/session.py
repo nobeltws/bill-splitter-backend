@@ -18,6 +18,7 @@ class CreateSessionRequest(BaseModel):
     tax: float = Field(default=0, ge=0)
     serviceCharge: float = Field(default=0, ge=0)
     discount: float = Field(default=0, ge=0)
+    participantCount: int = Field(default=1, gt=0)
 
 
 class SessionItemResponse(BaseModel):
@@ -50,6 +51,7 @@ class GetSessionResponse(BaseModel):
     tax: float
     serviceCharge: float
     discount: float
+    participantCount: int
     claims: list[SessionClaimResponse] = []
     payments: list = []
     createdAt: datetime
