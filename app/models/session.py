@@ -19,3 +19,4 @@ class Session(Base):
     created_at: Mapped[datetime] = mapped_column(server_default=func.now())
 
     items: Mapped[list["Item"]] = relationship(back_populates="session", cascade="all, delete-orphan")
+    claims: Mapped[list["Claim"]] = relationship(back_populates="session", cascade="all, delete-orphan")
