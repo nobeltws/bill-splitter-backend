@@ -7,6 +7,7 @@ from sqlalchemy import text
 
 from app.api.health import router as health_router
 from app.api.receipts import router as receipts_router
+from app.api.sessions import router as sessions_router
 from app.database import engine
 from app.exceptions import register_exception_handlers
 from app.services.ocr import ocr_service
@@ -47,3 +48,4 @@ register_exception_handlers(app)
 
 app.include_router(health_router)
 app.include_router(receipts_router)
+app.include_router(sessions_router)
