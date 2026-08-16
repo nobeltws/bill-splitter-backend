@@ -19,7 +19,7 @@ class SessionService:
         tax: float,
         service_charge: float,
         discount: float,
-        participant_count: int = 1,
+        participant_count: int,
     ) -> Session:
         return await self.repo.create(
             host_paynow_id=host_paynow_id,

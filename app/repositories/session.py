@@ -22,7 +22,7 @@ class SessionRepository:
         tax: Decimal,
         service_charge: Decimal,
         discount: Decimal,
-        participant_count: int = 1,
+        participant_count: int,
     ) -> Session:
         session = Session(
             host_paynow_id=host_paynow_id,

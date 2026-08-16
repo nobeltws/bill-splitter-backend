@@ -19,7 +19,7 @@ class Session(Base):
     tax: Mapped[Decimal] = mapped_column(Numeric(10, 2), default=Decimal("0"))
     service_charge: Mapped[Decimal] = mapped_column(Numeric(10, 2), default=Decimal("0"))
     discount: Mapped[Decimal] = mapped_column(Numeric(10, 2), default=Decimal("0"))
-    participant_count: Mapped[int] = mapped_column(Integer, default=1)
+    participant_count: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
     created_at: Mapped[datetime] = mapped_column(server_default=func.now())
 
     items: Mapped[list["Item"]] = relationship(back_populates="session", cascade="all, delete-orphan")
