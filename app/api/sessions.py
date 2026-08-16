@@ -10,6 +10,7 @@ from app.schemas.session import (
     CreateSessionResponse,
     GetSessionResponse,
     SessionItemResponse,
+    SessionSummaryResponse,
 )
 from app.services.session import SessionService
 
@@ -38,6 +39,17 @@ async def create_session(
         participant_count=body.participantCount,
     )
     return CreateSessionResponse(sessionId=session.id, createdAt=session.created_at)
+
+
+@router.get("/{session_id}/summary", response_model=SessionSummaryResponse)
+async def get_session_summary(
+    session_id: uuid.UUID,
+    service: SessionService = Depends(get_service),
+):
+    summary = await service.get_summary(session_id)
+    if summary is None:
+        raise HTTPException(status_code=404, detail="Session not found")
+    return summary
 
 
 @router.get("/{session_id}", response_model=GetSessionResponse)

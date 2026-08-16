@@ -55,3 +55,34 @@ class GetSessionResponse(BaseModel):
     claims: list[SessionClaimResponse] = []
     payments: list = []
     createdAt: datetime
+
+
+class ParticipantSummary(BaseModel):
+    name: str
+    itemsSubtotal: float
+    proportionalTax: float
+    proportionalServiceCharge: float
+    proportionalDiscount: float
+    totalOwed: float
+
+
+class UnclaimedItem(BaseModel):
+    id: uuid.UUID
+    name: str
+    quantity: int
+    unitPrice: float
+
+
+class UnclaimedSummary(BaseModel):
+    items: list[UnclaimedItem]
+    subtotal: float
+
+
+class SessionSummaryResponse(BaseModel):
+    rawSubtotal: float
+    tax: float
+    serviceCharge: float
+    discount: float
+    grandTotal: float
+    participants: list[ParticipantSummary]
+    unclaimed: UnclaimedSummary
