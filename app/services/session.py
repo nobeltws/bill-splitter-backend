@@ -17,16 +17,16 @@ class SessionService:
         self,
         host_paynow_id: str,
         items: list[dict],
-        tax: float,
-        service_charge: float,
+        tax_rate: float,
+        service_charge_rate: float,
         discount: float,
         participant_count: int,
     ) -> Session:
         return await self.repo.create(
             host_paynow_id=host_paynow_id,
             items=items,
-            tax=Decimal(str(tax)),
-            service_charge=Decimal(str(service_charge)),
+            tax_rate=Decimal(str(tax_rate)),
+            service_charge_rate=Decimal(str(service_charge_rate)),
             discount=Decimal(str(discount)),
             participant_count=participant_count,
         )
@@ -56,8 +56,8 @@ class SessionService:
         calc = BillCalculationService.calculate(
             items=items,
             claims=claims,
-            tax=session.tax,
-            service_charge=session.service_charge,
+            tax_rate=session.tax_rate,
+            service_charge_rate=session.service_charge_rate,
             discount=session.discount,
             participant_count=session.participant_count,
         )
@@ -86,6 +86,8 @@ class SessionService:
             "serviceCharge": float(calc["service_charge"]),
             "discount": float(calc["discount"]),
             "grandTotal": float(calc["grand_total"]),
+            "taxRate": float(session.tax_rate),
+            "serviceChargeRate": float(session.service_charge_rate),
             "participants": [
                 {
                     "name": p["name"],

@@ -16,8 +16,8 @@ class Session(Base):
 
     id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
     host_paynow_id: Mapped[str] = mapped_column(String(50))
-    tax: Mapped[Decimal] = mapped_column(Numeric(10, 2), default=Decimal("0"))
-    service_charge: Mapped[Decimal] = mapped_column(Numeric(10, 2), default=Decimal("0"))
+    tax_rate: Mapped[Decimal] = mapped_column(Numeric(5, 4), nullable=False, default=Decimal("0.09"))
+    service_charge_rate: Mapped[Decimal] = mapped_column(Numeric(5, 4), nullable=False, default=Decimal("0.10"))
     discount: Mapped[Decimal] = mapped_column(Numeric(10, 2), default=Decimal("0"))
     participant_count: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
     created_at: Mapped[datetime] = mapped_column(server_default=func.now())

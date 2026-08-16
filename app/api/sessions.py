@@ -33,8 +33,8 @@ async def create_session(
     session = await service.create_session(
         host_paynow_id=body.hostPaynowId,
         items=items,
-        tax=body.tax,
-        service_charge=body.serviceCharge,
+        tax_rate=body.taxRate,
+        service_charge_rate=body.serviceChargeRate,
         discount=body.discount,
         participant_count=body.participantCount,
     )
@@ -65,8 +65,8 @@ async def get_session_by_id(
         sessionId=session.id,
         hostPaynowId=session.host_paynow_id,
         items=[SessionItemResponse.from_orm_item(item) for item in session.items],
-        tax=float(session.tax),
-        serviceCharge=float(session.service_charge),
+        taxRate=float(session.tax_rate),
+        serviceChargeRate=float(session.service_charge_rate),
         discount=float(session.discount),
         participantCount=session.participant_count,
         claims=[

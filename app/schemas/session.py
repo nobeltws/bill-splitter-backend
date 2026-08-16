@@ -15,8 +15,8 @@ class SessionItemRequest(BaseModel):
 class CreateSessionRequest(BaseModel):
     hostPaynowId: str = Field(min_length=1)
     items: list[SessionItemRequest] = Field(min_length=1)
-    tax: float = Field(default=0, ge=0)
-    serviceCharge: float = Field(default=0, ge=0)
+    taxRate: float = Field(default=0.09, ge=0, le=1)
+    serviceChargeRate: float = Field(default=0.10, ge=0, le=1)
     discount: float = Field(default=0, ge=0)
     participantCount: int = Field(default=1, gt=0)
 
@@ -48,8 +48,8 @@ class GetSessionResponse(BaseModel):
     sessionId: uuid.UUID
     hostPaynowId: str
     items: list[SessionItemResponse]
-    tax: float
-    serviceCharge: float
+    taxRate: float
+    serviceChargeRate: float
     discount: float
     participantCount: int
     claims: list[SessionClaimResponse] = []
@@ -84,5 +84,7 @@ class SessionSummaryResponse(BaseModel):
     serviceCharge: float
     discount: float
     grandTotal: float
+    taxRate: float
+    serviceChargeRate: float
     participants: list[ParticipantSummary]
     unclaimed: UnclaimedSummary
