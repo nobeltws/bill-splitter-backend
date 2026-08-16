@@ -5,6 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_session
 from app.schemas.claim import SessionClaimResponse
+from app.schemas.payment import SessionPaymentResponse
 from app.schemas.session import (
     CreateSessionRequest,
     CreateSessionResponse,
@@ -78,6 +79,12 @@ async def get_session_by_id(
             )
             for claim in session.claims
         ],
-        payments=[],
+        payments=[
+            SessionPaymentResponse(
+                participantName=payment.participant_name,
+                paidAt=payment.paid_at,
+            )
+            for payment in session.payments
+        ],
         createdAt=session.created_at,
     )
