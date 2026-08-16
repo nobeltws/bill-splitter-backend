@@ -26,18 +26,24 @@ class BillCalculationService:
             name = claim["participant_name"]
             participant_subtotals[name] = participant_subtotals.get(name, Decimal("0")) + share
 
-        if raw_subtotal == 0:
-            adjustment_ratio = Decimal("0")
-        else:
-            effective_discount = min(discount, raw_subtotal + tax + service_charge)
-            adjustment_ratio = (tax + service_charge - effective_discount) / raw_subtotal
-
         participants = []
         for name, subtotal in participant_subtotals.items():
-            proportional_tax = (subtotal * tax / raw_subtotal).quantize(TWOPLACES, rounding=ROUND_HALF_EVEN) if raw_subtotal else Decimal("0")
-            proportional_service = (subtotal * service_charge / raw_subtotal).quantize(TWOPLACES, rounding=ROUND_HALF_EVEN) if raw_subtotal else Decimal("0")
-            proportional_discount = (subtotal * discount / raw_subtotal).quantize(TWOPLACES, rounding=ROUND_HALF_EVEN) if raw_subtotal else Decimal("0")
-            total_owed = (subtotal + proportional_tax + proportional_service - proportional_discount).quantize(TWOPLACES, rounding=ROUND_HALF_EVEN)
+            proportional_tax = (
+                (subtotal * tax / raw_subtotal).quantize(TWOPLACES, rounding=ROUND_HALF_EVEN)
+                if raw_subtotal else Decimal("0")
+            )
+            proportional_service = (
+                (subtotal * service_charge / raw_subtotal).quantize(TWOPLACES, rounding=ROUND_HALF_EVEN)
+                if raw_subtotal else Decimal("0")
+            )
+            proportional_discount = (
+                (subtotal * discount / raw_subtotal).quantize(TWOPLACES, rounding=ROUND_HALF_EVEN)
+                if raw_subtotal else Decimal("0")
+            )
+            total_owed = (
+                (subtotal + proportional_tax + proportional_service - proportional_discount)
+                .quantize(TWOPLACES, rounding=ROUND_HALF_EVEN)
+            )
             participants.append({
                 "name": name,
                 "items_subtotal": subtotal.quantize(TWOPLACES, rounding=ROUND_HALF_EVEN),
