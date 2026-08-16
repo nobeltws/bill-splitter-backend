@@ -3,6 +3,8 @@ from datetime import datetime
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from app.schemas.claim import SessionClaimResponse
+
 
 class SessionItemRequest(BaseModel):
     name: str = Field(min_length=1)
@@ -48,6 +50,6 @@ class GetSessionResponse(BaseModel):
     tax: float
     serviceCharge: float
     discount: float
-    claims: list = []
+    claims: list[SessionClaimResponse] = []
     payments: list = []
     createdAt: datetime

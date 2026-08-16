@@ -6,6 +6,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
+from app.models.claim import Claim
 from app.models.item import Item
 from app.models.session import Session
 
@@ -44,7 +45,7 @@ class SessionRepository:
     async def get_by_id(self, session_id: uuid.UUID) -> Session | None:
         stmt = (
             select(Session)
-            .options(selectinload(Session.items))
+            .options(selectinload(Session.items), selectinload(Session.claims).selectinload(Claim.item))
             .where(Session.id == session_id)
         )
         result = await self.db.execute(stmt)
