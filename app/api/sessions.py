@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_session
+from app.schemas.claim import SessionClaimResponse
 from app.schemas.session import (
     CreateSessionRequest,
     CreateSessionResponse,
@@ -54,7 +55,15 @@ async def get_session_by_id(
         tax=float(session.tax),
         serviceCharge=float(session.service_charge),
         discount=float(session.discount),
-        claims=[],
+        claims=[
+            SessionClaimResponse(
+                participantName=claim.participant_name,
+                itemId=claim.item_id,
+                itemName=claim.item.name,
+                quantity=claim.quantity,
+            )
+            for claim in session.claims
+        ],
         payments=[],
         createdAt=session.created_at,
     )
