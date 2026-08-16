@@ -4,6 +4,7 @@ from datetime import datetime
 from pydantic import BaseModel, ConfigDict, Field
 
 from app.schemas.claim import SessionClaimResponse
+from app.schemas.payment import SessionPaymentResponse
 
 
 class SessionItemRequest(BaseModel):
@@ -53,7 +54,7 @@ class GetSessionResponse(BaseModel):
     discount: float
     participantCount: int
     claims: list[SessionClaimResponse] = []
-    payments: list = []
+    payments: list[SessionPaymentResponse] = []
     createdAt: datetime
 
 
