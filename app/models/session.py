@@ -24,3 +24,4 @@ class Session(Base):
 
     items: Mapped[list["Item"]] = relationship(back_populates="session", cascade="all, delete-orphan")
     claims: Mapped[list["Claim"]] = relationship(back_populates="session", cascade="all, delete-orphan")
+    payments: Mapped[list["Payment"]] = relationship(back_populates="session", cascade="all, delete-orphan")
