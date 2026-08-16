@@ -14,8 +14,8 @@ class BillCalculationService:
         participant_count: int,
     ) -> dict:
         raw_subtotal = sum(
-            Decimal(str(item["quantity"])) * Decimal(str(item["unit_price"]))
-            for item in items
+            (Decimal(str(item["quantity"])) * Decimal(str(item["unit_price"])) for item in items),
+            Decimal("0"),
         )
 
         participant_subtotals: dict[str, Decimal] = {}
@@ -40,9 +40,10 @@ class BillCalculationService:
                 (subtotal * discount / raw_subtotal).quantize(TWOPLACES, rounding=ROUND_HALF_EVEN)
                 if raw_subtotal else Decimal("0")
             )
-            total_owed = (
+            total_owed = max(
                 (subtotal + proportional_tax + proportional_service - proportional_discount)
-                .quantize(TWOPLACES, rounding=ROUND_HALF_EVEN)
+                .quantize(TWOPLACES, rounding=ROUND_HALF_EVEN),
+                Decimal("0.00"),
             )
             participants.append({
                 "name": name,
@@ -56,7 +57,10 @@ class BillCalculationService:
         claimed_subtotal = sum(p["items_subtotal"] for p in participants)
         unclaimed_subtotal = (raw_subtotal - claimed_subtotal).quantize(TWOPLACES, rounding=ROUND_HALF_EVEN)
 
-        grand_total = (raw_subtotal + tax + service_charge - discount).quantize(TWOPLACES, rounding=ROUND_HALF_EVEN)
+        grand_total = max(
+            (raw_subtotal + tax + service_charge - discount).quantize(TWOPLACES, rounding=ROUND_HALF_EVEN),
+            Decimal("0.00"),
+        )
 
         # Rounding adjustment: apply difference to largest share
         total_owed_sum = sum(p["total_owed"] for p in participants)
