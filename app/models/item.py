@@ -1,5 +1,4 @@
 import uuid
-
 from decimal import Decimal
 
 from sqlalchemy import CheckConstraint, ForeignKey, Integer, Numeric, String
@@ -12,7 +11,9 @@ class Item(Base):
     __tablename__ = "items"
 
     id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
-    session_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("sessions.id", ondelete="CASCADE"))
+    session_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("sessions.id", ondelete="CASCADE"), index=True
+    )
     name: Mapped[str] = mapped_column(String(255))
     quantity: Mapped[int] = mapped_column(Integer)
     unit_price: Mapped[Decimal] = mapped_column(Numeric(10, 2))

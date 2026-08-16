@@ -40,9 +40,11 @@ def upgrade() -> None:
         sa.CheckConstraint("quantity > 0", name="ck_items_quantity_positive"),
         sa.CheckConstraint("unit_price > 0", name="ck_items_unit_price_positive"),
     )
+    op.create_index("ix_items_session_id", "items", ["session_id"])
 
 
 def downgrade() -> None:
     """Downgrade schema."""
+    op.drop_index("ix_items_session_id", table_name="items")
     op.drop_table("items")
     op.drop_table("sessions")
