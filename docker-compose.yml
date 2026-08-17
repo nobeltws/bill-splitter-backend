@@ -1,34 +1,34 @@
 services:
-  db:
-    image: postgres:16-alpine
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: billsplitter
-    ports:
-      - "5432:5432"
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d billsplitter"]
-      interval: 2s
-      timeout: 5s
-      retries: 10
+    db:
+        image: postgres:16-alpine
+        environment:
+            POSTGRES_USER: postgres
+            POSTGRES_PASSWORD: postgres
+            POSTGRES_DB: billsplitter
+        ports:
+            - "5432:5432"
+        volumes:
+            - pgdata:/var/lib/postgresql/data
+        healthcheck:
+            test: ["CMD-SHELL", "pg_isready -U postgres -d billsplitter"]
+            interval: 2s
+            timeout: 5s
+            retries: 10
 
-  server:
-    build: .
-    ports:
-      - "8000:8000"
-    environment:
-      DATABASE_URL: postgresql+asyncpg://postgres:postgres@db:5432/billsplitter
-    volumes:
-      - ./app:/app/app
-      - ./alembic:/app/alembic
-    depends_on:
-      db:
-        condition: service_healthy
-    command: >
-      sh -c "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
+    server:
+        build: .
+        ports:
+            - "8000:8000"
+        environment:
+            DATABASE_URL: postgresql+asyncpg://postgres:postgres@db:5432/bill_splitter
+        volumes:
+            - ./app:/app/app
+            - ./alembic:/app/alembic
+        depends_on:
+            db:
+                condition: service_healthy
+        command: >
+            sh -c "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
 
 volumes:
-  pgdata:
+    pgdata:

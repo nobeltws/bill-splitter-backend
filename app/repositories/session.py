@@ -47,7 +47,7 @@ class SessionRepository:
     async def get_by_id(self, session_id: uuid.UUID) -> Session | None:
         stmt = (
             select(Session)
-            .options(selectinload(Session.items), selectinload(Session.claims).selectinload(Claim.item))
+            .options(selectinload(Session.items), selectinload(Session.claims).selectinload(Claim.item), selectinload(Session.payments))
             .where(Session.id == session_id)
         )
         result = await self.db.execute(stmt)
