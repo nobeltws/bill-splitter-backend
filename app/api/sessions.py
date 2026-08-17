@@ -5,11 +5,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_session
 from app.schemas.claim import SessionClaimResponse
+from app.schemas.payment import SessionPaymentResponse
 from app.schemas.session import (
     CreateSessionRequest,
     CreateSessionResponse,
     GetSessionResponse,
     SessionItemResponse,
+    SessionSummaryResponse,
 )
 from app.services.session import SessionService
 
@@ -32,11 +34,23 @@ async def create_session(
     session = await service.create_session(
         host_paynow_id=body.hostPaynowId,
         items=items,
-        tax=body.tax,
-        service_charge=body.serviceCharge,
+        tax_rate=body.taxRate,
+        service_charge_rate=body.serviceChargeRate,
         discount=body.discount,
+        participant_count=body.participantCount,
     )
     return CreateSessionResponse(sessionId=session.id, createdAt=session.created_at)
+
+
+@router.get("/{session_id}/summary", response_model=SessionSummaryResponse)
+async def get_session_summary(
+    session_id: uuid.UUID,
+    service: SessionService = Depends(get_service),
+):
+    summary = await service.get_summary(session_id)
+    if summary is None:
+        raise HTTPException(status_code=404, detail="Session not found")
+    return summary
 
 
 @router.get("/{session_id}", response_model=GetSessionResponse)
@@ -52,9 +66,10 @@ async def get_session_by_id(
         sessionId=session.id,
         hostPaynowId=session.host_paynow_id,
         items=[SessionItemResponse.from_orm_item(item) for item in session.items],
-        tax=float(session.tax),
-        serviceCharge=float(session.service_charge),
+        taxRate=float(session.tax_rate),
+        serviceChargeRate=float(session.service_charge_rate),
         discount=float(session.discount),
+        participantCount=session.participant_count,
         claims=[
             SessionClaimResponse(
                 participantName=claim.participant_name,
@@ -64,6 +79,12 @@ async def get_session_by_id(
             )
             for claim in session.claims
         ],
-        payments=[],
+        payments=[
+            SessionPaymentResponse(
+                participantName=payment.participant_name,
+                paidAt=payment.paid_at,
+            )
+            for payment in session.payments
+        ],
         createdAt=session.created_at,
     )

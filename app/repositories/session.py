@@ -19,15 +19,17 @@ class SessionRepository:
         self,
         host_paynow_id: str,
         items: list[dict],
-        tax: Decimal,
-        service_charge: Decimal,
+        tax_rate: Decimal,
+        service_charge_rate: Decimal,
         discount: Decimal,
+        participant_count: int,
     ) -> Session:
         session = Session(
             host_paynow_id=host_paynow_id,
-            tax=tax,
-            service_charge=service_charge,
+            tax_rate=tax_rate,
+            service_charge_rate=service_charge_rate,
             discount=discount,
+            participant_count=participant_count,
         )
         for item_data in items:
             item = Item(
@@ -45,7 +47,7 @@ class SessionRepository:
     async def get_by_id(self, session_id: uuid.UUID) -> Session | None:
         stmt = (
             select(Session)
-            .options(selectinload(Session.items), selectinload(Session.claims).selectinload(Claim.item))
+            .options(selectinload(Session.items), selectinload(Session.claims).selectinload(Claim.item), selectinload(Session.payments))
             .where(Session.id == session_id)
         )
         result = await self.db.execute(stmt)

@@ -31,8 +31,8 @@ class TestCreateSessionRequest:
         req = CreateSessionRequest(
             hostPaynowId="+6591234567",
             items=[{"name": "Chicken Rice", "quantity": 2, "unitPrice": 6.50}],
-            tax=1.20,
-            serviceCharge=2.00,
+            taxRate=0.09,
+            serviceChargeRate=0.10,
             discount=0,
         )
         assert req.hostPaynowId == "+6591234567"
@@ -43,8 +43,8 @@ class TestCreateSessionRequest:
             CreateSessionRequest(
                 hostPaynowId="+6591234567",
                 items=[],
-                tax=0,
-                serviceCharge=0,
+                taxRate=0,
+                serviceChargeRate=0,
                 discount=0,
             )
         assert "at least 1" in str(exc_info.value).lower()
@@ -54,8 +54,8 @@ class TestCreateSessionRequest:
             CreateSessionRequest(
                 hostPaynowId="",
                 items=[{"name": "Rice", "quantity": 1, "unitPrice": 5.00}],
-                tax=0,
-                serviceCharge=0,
+                taxRate=0,
+                serviceChargeRate=0,
                 discount=0,
             )
 
@@ -64,6 +64,6 @@ class TestCreateSessionRequest:
             hostPaynowId="+6591234567",
             items=[{"name": "Rice", "quantity": 1, "unitPrice": 5.00}],
         )
-        assert req.tax == 0
-        assert req.serviceCharge == 0
+        assert req.taxRate == 0.09
+        assert req.serviceChargeRate == 0.10
         assert req.discount == 0

@@ -18,8 +18,8 @@ VALID_PAYLOAD = {
         {"name": "Chicken Rice", "quantity": 2, "unitPrice": 6.50},
         {"name": "Teh Tarik", "quantity": 1, "unitPrice": 2.00},
     ],
-    "tax": 1.20,
-    "serviceCharge": 2.00,
+    "taxRate": 0.09,
+    "serviceChargeRate": 0.10,
     "discount": 0,
 }
 
@@ -66,8 +66,8 @@ class TestGetSession:
         assert data["items"][0]["name"] == "Chicken Rice"
         assert data["items"][0]["quantity"] == 2
         assert data["items"][0]["unitPrice"] == 6.50
-        assert data["tax"] == 1.20
-        assert data["serviceCharge"] == 2.00
+        assert data["taxRate"] == 0.09
+        assert data["serviceChargeRate"] == 0.10
         assert data["discount"] == 0
         assert data["claims"] == []
         assert data["payments"] == []
@@ -79,4 +79,20 @@ class TestGetSession:
 
     async def test_get_session_invalid_uuid_returns_422(self, client):
         response = await client.get("/api/sessions/not-a-uuid")
+        assert response.status_code == 422
+
+
+class TestParticipantCount:
+    async def test_create_session_with_participant_count(self, client):
+        payload = {**VALID_PAYLOAD, "participantCount": 3}
+        response = await client.post("/api/sessions", json=payload)
+        assert response.status_code == 201
+
+        session_id = response.json()["sessionId"]
+        get_resp = await client.get(f"/api/sessions/{session_id}")
+        assert get_resp.json()["participantCount"] == 3
+
+    async def test_create_session_participant_count_must_be_positive(self, client):
+        payload = {**VALID_PAYLOAD, "participantCount": 0}
+        response = await client.post("/api/sessions", json=payload)
         assert response.status_code == 422
